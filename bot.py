@@ -485,9 +485,12 @@ async def catalog_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
             cart = context.user_data.get("cart", {})
             current_qty = cart.get(idx, {}).get("qty", 0)
 
+            pcs_label = t['pcs']
+            out_label = t['out_of_stock']
+            stock_text = out_label if stock == 0 else f'Остаток: {stock} {pcs_label}'
             text = (f"📦 {name}\n"
                    f"💵 {price:,} {t['sum']}\n"
-                   f"📊 {t['out_of_stock'] if stock == 0 else f'Остаток: {stock} {t[\"pcs\"]}'}\n\n"
+                   f"📊 {stock_text}\n\n"
                    f"🛒 В корзине: {current_qty} {t['pcs']}\n\n"
                    f"{t['qty_prompt']}")
 
