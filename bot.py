@@ -116,7 +116,13 @@ TEXTS = {
 def get_sheets_client():
     scopes = ["https://www.googleapis.com/auth/spreadsheets",
               "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_file(GOOGLE_CREDENTIALS_FILE, scopes=scopes)
+    creds_json = os.environ.get("GOOGLE_CREDENTIALS")
+    if creds_json:
+        import json
+        creds_dict = json.loads(creds_json)
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    else:
+        creds = Credentials.from_service_account_file(GOOGLE_CREDENTIALS_FILE, scopes=scopes)
     return gspread.authorize(creds)
 
 def get_products(brand):
