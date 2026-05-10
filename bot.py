@@ -41,7 +41,7 @@ TEXTS = {
     "ru": {
         "choose_lang": "👋 Добро пожаловать!\nВыберите язык / Tilni tanlang:",
         "enter_shop_name": "🏪 Введите название вашего магазина:",
-        "enter_address": "📍 Введите адрес вашего магазина:",
+        "enter_address": "📍 Отправьте геолокацию магазина или напишите адрес вручную:",
         "wait_approval": "⏳ Ваша заявка отправлена администратору.\nОжидайте одобрения.",
         "approved": "✅ Ваш магазин одобрен! Напишите /start чтобы начать.",
         "rejected": "❌ Ваша заявка отклонена. Свяжитесь с администратором.",
@@ -76,7 +76,7 @@ TEXTS = {
     "uz": {
         "choose_lang": "👋 Xush kelibsiz!\nВыберите язык / Tilni tanlang:",
         "enter_shop_name": "🏪 Do'koningiz nomini kiriting:",
-        "enter_address": "📍 Do'koningiz manzilini kiriting:",
+        "enter_address": "📍 Do'koningiz joylashuvini yuboring yoki manzilni yozing:",
         "wait_approval": "⏳ Arizangiz administratorga yuborildi.\nTasdiqlashni kuting.",
         "approved": "✅ Do'koningiz tasdiqlandi! Boshlash uchun /start yozing.",
         "rejected": "❌ Arizangiz rad etildi. Administrator bilan bog'laning.",
@@ -300,10 +300,17 @@ async def get_shop_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_shop_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = context.user_data.get("lang", "ru")
     t = TEXTS[lang]
-    address = update.message.text.strip()
     user_id = update.effective_user.id
     name = context.user_data.get("shop_name", "")
     username = update.effective_user.username or str(user_id)
+
+    # Принять геолокацию или текст
+    if update.message.location:
+        lat = update.message.location.latitude
+        lon = update.message.location.longitude
+        address = f"📍 {lat:.5f}, {lon:.5f} (maps.google.com/?q={lat},{lon})"
+    else:
+        address = update.message.text.strip()
 
     register_shop(user_id, name, address, lang)
 
@@ -792,6 +799,7 @@ def main():
                 MessageHandler(filters.TEXT & ~filters.COMMAND, get_shop_name)
             ],
             REGISTER_ADDRESS: [
+                MessageHandler(filters.LOCATION, get_shop_address),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, get_shop_address)
             ],
             WAIT_APPROVAL: [
